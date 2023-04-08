@@ -1,20 +1,25 @@
 import React, { memo, useState } from 'react';
-import { TouchableOpacity, StyleSheet, Text, View } from 'react-native';
+import { TouchableOpacity, StyleSheet, Text, View, Alert } from 'react-native';
 import Background from '../components/Background';
 import Logo from '../components/Logo';
 import Header from '../components/Header';
 import Button from '../components/Button';
 import TextInput from '../components/TextInput';
-import BackButton from '../components/BackButton';
 import { theme } from '../core/theme';
 import { emailValidator, passwordValidator } from '../core/utils';
 import { Navigation } from '../types';
+
+import { getAuth, signInWithEmailAndPassword } from 'firebase/auth';
+import { initializeApp } from 'firebase/app'
+import { firebaseConfig } from '../config/firebase';
 
 type Props = {
   navigation: Navigation;
 };
 
 const LoginScreen = ({ navigation }: Props) => {
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
   const [email, setEmail] = useState({ value: '', error: '' });
   const [password, setPassword] = useState({ value: '', error: '' });
 
@@ -28,19 +33,36 @@ const LoginScreen = ({ navigation }: Props) => {
       return;
     }
 
-    navigation.navigate('Dashboard');
+    signInWithEmailAndPassword(auth, email.value, password.value)
+    .then(() => {
+      Alert.alert('Olá', 'Usuário logado com sucesso !');
+      
+      navigation.navigate('Dashboard');
+    })
+    .catch(error => {
+      if (error) {
+        switch (error.code) {
+          case 'auth/wrong-password':
+            Alert.alert('Usuário ou senha inválido !');
+            break;
+          case 'auth/user-not-found':
+            Alert.alert('Usuário ou senha inválido !');
+            break;
+          default:
+            Alert.alert('Erro no servidor, tente mais tarde !');
+        }
+      }
+  })
+
   };
 
   return (
     <Background>
-      <BackButton goBack={() => navigation.navigate('HomeScreen')} />
-
       <Logo />
-
       <Header>Acessar</Header>
 
       <TextInput
-        label="Email"
+        placeholder="Email"
         returnKeyType="next"
         value={email.value}
         onChangeText={text => setEmail({ value: text, error: '' })}
@@ -53,7 +75,7 @@ const LoginScreen = ({ navigation }: Props) => {
       />
 
       <TextInput
-        label="Senha"
+        placeholder="Senha"
         returnKeyType="done"
         value={password.value}
         onChangeText={text => setPassword({ value: text, error: '' })}
@@ -70,7 +92,10 @@ const LoginScreen = ({ navigation }: Props) => {
         </TouchableOpacity>
       </View>
 
-      <Button mode="contained" onPress={_onLoginPressed}>
+      <Button
+        mode="contained"
+        onPress={_onLoginPressed}
+      >
         Entrar
       </Button>
 

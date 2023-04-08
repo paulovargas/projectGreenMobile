@@ -1,8 +1,9 @@
 export const emailValidator = (email: string) => {
   const re = /\S+@\S+\.\S+/;
 
-  if (!email || email.length <= 0) return 'Preencher email';
-  if (!re.test(email)) return 'Email inválido...';
+  if (!email || email.length <= 0)
+    return 'Preencher email';
+  
 
   return '';
 };

@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "React Native Paper Login Template",
-    "slug": "react-native-paper-login-template",
+    "name": "projectGreenMobile",
+    "slug": "projectGreenMobile",
     "privacy": "public",
     "platforms": [
       "ios",

@@ -1,5 +1,5 @@
 import React, { memo, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import Background from '../components/Background';
 import Logo from '../components/Logo';
 import Header from '../components/Header';
@@ -14,11 +14,18 @@ import {
   nameValidator,
 } from '../core/utils';
 
+import { getAuth, createUserWithEmailAndPassword } from 'firebase/auth';
+import { initializeApp } from 'firebase/app'
+import { firebaseConfig } from '../config/firebase';
+
 type Props = {
   navigation: Navigation;
 };
 
 const RegisterScreen = ({ navigation }: Props) => {
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+
   const [name, setName] = useState({ value: '', error: '' });
   const [email, setEmail] = useState({ value: '', error: '' });
   const [password, setPassword] = useState({ value: '', error: '' });
@@ -35,7 +42,29 @@ const RegisterScreen = ({ navigation }: Props) => {
       return;
     }
 
-    navigation.navigate('Dashboard');
+    createUserWithEmailAndPassword(auth, email.value, password.value)
+      .then((userCredential) => {
+        let user = userCredential.user;
+        Alert.alert('Cadastrado com sucesso !');
+        //navigation.navigate('Dashboard', {idUser: user.uid});
+        //const user = userCredential.user;
+        //console.log(user)
+      })
+      .catch(error => {
+        if (error.code) {
+          switch (error.code) {
+            case 'auth/weak-password':
+              Alert.alert('Senha de baixa segurança !');
+              break;
+            case 'auth/email-already-in-use':
+              Alert.alert('Usuário já cadastrado !');
+              break;
+          }
+        }
+        //Alert.alert(error.data.message);
+    })
+
+    //navigation.navigate('Dashboard');
   };
 
   return (
